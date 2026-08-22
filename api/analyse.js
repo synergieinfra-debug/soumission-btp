@@ -15,8 +15,15 @@ module.exports = async function (req, res) {
   const corps = typeof req.body === "string" ? safeParse(req.body) : req.body;
   if (!corps) return res.status(400).json({ erreur: "Requete illisible" });
 
-  const { pieces, tache } = corps;
-  const consigne = PROMPTS[tache];
+  const { pieces, tache, enveloppe } = corps;
+  let consigne = PROMPTS[tache];
+
+  // Une enveloppe a la fois : requetes plus courtes, donc plus rapides.
+  if (tache === "exigences" && enveloppe) {
+    consigne = consigne +
+      "\n\nNe traite QUE l'enveloppe " + enveloppe + ". Ignore toutes les autres. " +
+      "Maximum 15 entrees. Si aucune piece ne releve de cette enveloppe, renvoie {\"e\":[]}.";
+  }
 
   if (!consigne) return res.status(400).json({ erreur: "Tache inconnue : " + tache });
   if (!Array.isArray(pieces) || pieces.length === 0) {
@@ -65,7 +72,7 @@ module.exports = async function (req, res) {
       },
       body: JSON.stringify({
         model: process.env.MODELE_CLAUDE || "claude-sonnet-5",
-        max_tokens: 8000,
+        max_tokens: 4000,
         messages: [{ role: "user", content: contenu }],
       }),
     });
@@ -136,7 +143,7 @@ Limite "sources" a 8 entrees, extraits de 10 a 25 mots recopies litteralement.`,
   exigences: SOCLE + `
 
 Liste toutes les pieces, justificatifs et documents que le soumissionnaire doit produire.
-Maximum 40 entrees. Une piece par entree : si une phrase en enumere cinq, produis cinq entrees.
+Maximum 15 entrees. Une piece par entree : si une phrase en enumere cinq, produis cinq entrees.
 
 "env" classe la piece dans l'enveloppe correspondante.
 "x" doit etre un fragment recopie LITTERALEMENT des pieces fournies (8 a 25 mots).
