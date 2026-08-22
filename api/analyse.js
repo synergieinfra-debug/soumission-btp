@@ -108,9 +108,42 @@ function extraireJSON(texte) {
   if (!texte) return null;
   const t = texte.replace(/```json/gi, "").replace(/```/g, "").trim();
   const d = t.indexOf("{");
+  if (d === -1) return null;
+
   const f = t.lastIndexOf("}");
-  if (d === -1 || f === -1) return null;
-  try { return JSON.parse(t.slice(d, f + 1)); } catch { return null; }
+  if (f > d) {
+    try { return JSON.parse(t.slice(d, f + 1)); } catch (e) { /* on tente la reparation */ }
+  }
+
+  // Reponse coupee en cours de route : on tronque au dernier objet complet
+  // du tableau, puis on referme les crochets et accolades manquants.
+  return reparerJSON(t.slice(d));
+}
+
+function reparerJSON(t) {
+  const dernier = t.lastIndexOf("}");
+  if (dernier === -1) return null;
+  let base = t.slice(0, dernier + 1);
+  for (let i = 0; i < 4; i++) {
+    let ouverts = 0, crochets = 0, chaine = false, echap = false;
+    for (const c of base) {
+      if (echap) { echap = false; continue; }
+      if (c === "\\") { echap = true; continue; }
+      if (c === '"') { chaine = !chaine; continue; }
+      if (chaine) continue;
+      if (c === "{") ouverts++;
+      if (c === "}") ouverts--;
+      if (c === "[") crochets++;
+      if (c === "]") crochets--;
+    }
+    const essai = base + "]".repeat(Math.max(0, crochets)) + "}".repeat(Math.max(0, ouverts));
+    try { return JSON.parse(essai); } catch (e) {
+      const precedent = base.lastIndexOf("},");
+      if (precedent === -1) return null;
+      base = base.slice(0, precedent + 1);
+    }
+  }
+  return null;
 }
 
 // =====================================================================
@@ -159,8 +192,7 @@ Schema exact :
 
 Compare les pieces fournies et releve les problemes du dossier : contradictions entre pieces,
 incoherences de quantites, silences (absence de clause de revision des prix, piece citee mais
-absente du dossier), risques contractuels, risques de forme. Maximum 8 entrees, classees de la
-plus lourde de consequences a la plus legere.
+absente du dossier), risques contractuels, risques de forme. Maximum 6 entrees, les plus lourdes de consequences.
 
 Schema exact :
 {"a":[{"s":"BLOQUANTE"|"MAJEURE"|"MINEURE"|"INFO",
@@ -168,7 +200,7 @@ Schema exact :
 "t":str,"d":str,"sa":str,"sb":str,"ac":str}]}
 
 "sa" et "sb" citent deux emplacements precis, par exemple "RC art. 4" et "CPS art. 4".
-"d" explique le probleme et sa consequence pratique en deux phrases.
+"d" explique le probleme et sa consequence pratique en UNE phrase de 30 mots maximum.
 "ac" indique l'action recommandee en trois a six mots.`,
 
   bordereau: SOCLE + `
