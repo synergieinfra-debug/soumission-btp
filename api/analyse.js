@@ -19,6 +19,12 @@ module.exports = async function (req, res) {
   let consigne = PROMPTS[tache];
 
   // Une enveloppe a la fois : requetes plus courtes, donc plus rapides.
+  // Le memoire est redige en deux passes : chacune tient dans le delai.
+  if (tache === "methodologie" && enveloppe) {
+    consigne = consigne + "\n\nNe redige QUE les sections " + enveloppe +
+      ". N'ecris rien pour les autres sections.";
+  }
+
   if (tache === "exigences" && enveloppe) {
     consigne = consigne +
       "\n\nNe traite QUE l'enveloppe " + enveloppe + ". Ignore toutes les autres. " +
