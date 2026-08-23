@@ -243,6 +243,45 @@ Schema exact :
 "d" explique en une phrase la consequence pratique pour le chiffrage.
 Si rien n'est decelable, renvoie {"p":[]}.`,
 
+  methodologie: SOCLE + `
+
+A partir du cahier des prescriptions speciales et du reglement fournis, redige un memoire technique
+propre a CE marche. La liste des moyens affectes t'est donnee avant cette consigne.
+
+INTERDITS : generalites, formules creuses, promesses invérifiables, phrases qui conviendraient a
+n'importe quel chantier. Chaque paragraphe doit s'appuyer sur un element concret du dossier :
+nature des ouvrages, quantites, contraintes du site, delais, controles exiges, penalites.
+
+Structure imposee, six sections dans cet ordre :
+1. Comprehension du projet et contraintes identifiees
+2. Organisation du chantier et installations
+3. Moyens humains et materiels affectes
+4. Methodologie d'execution par phase
+5. Assurance qualite et controles
+6. Hygiene, securite et protection de l'environnement
+
+Chaque section comporte 2 a 4 paragraphes de 40 a 80 mots. Ecris en francais professionnel,
+a la premiere personne du pluriel, au futur ou au present.
+
+Schema exact :
+{"s":[{"t":str,"p":[str]}]}`,
+
+  planning: SOCLE + `
+
+Etablis le planning d'execution des travaux. Le delai global contractuel et la liste des articles
+du bordereau te sont donnes avant cette consigne.
+
+Regles imperatives :
+- Les durees sont exprimees en JOURS calendaires. "debut" est le nombre de jours ecoules depuis
+  l'ordre de service, la premiere tache commencant a 0.
+- La derniere tache doit se terminer AU PLUS TARD au jour correspondant au delai global.
+- Inclure l'installation de chantier au debut et le repli en fin de chantier.
+- Enchainer les taches de facon realiste : certaines se recouvrent, d'autres non.
+- Maximum 18 taches, regroupees en 4 a 6 phases.
+
+Schema exact :
+{"p":[{"phase":str,"tache":str,"debut":nombre,"duree":nombre}]}`,
+
   anomalies: SOCLE + `
 
 Compare les pieces fournies et releve les problemes du dossier : contradictions entre pieces,
