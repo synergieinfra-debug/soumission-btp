@@ -182,9 +182,10 @@ Extrais les parametres de la consultation. Schema exact :
 "date_limite":"AAAA-MM-JJ"|null,"heure_limite":str|null,"delai_validite_offres":nombre|null,
 "cautionnement_provisoire":nombre|null,"penalite_retard":str|null,"revision_prix":str|null,
 "qualification_exigee":str|null,"classe_exigee":str|null,
-"mode_evaluation":str|null,"note_technique_min":nombre|null,
+"mode_evaluation":str|null,"note_technique_min":nombre|null,"note_technique_totale":nombre|null,
 "sources":[{"champ":str,"ref":str,"extrait":str}]}
 
+"note_technique_totale" est le bareme sur lequel l'offre technique est notee (souvent 100).
 Le champ "ref" indique la piece et l'article, par exemple "RC art. 3".
 Limite "sources" a 8 entrees, extraits de 10 a 25 mots recopies litteralement.`,
 
