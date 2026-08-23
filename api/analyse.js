@@ -15,7 +15,7 @@ module.exports = async function (req, res) {
   const corps = typeof req.body === "string" ? safeParse(req.body) : req.body;
   if (!corps) return res.status(400).json({ erreur: "Requete illisible" });
 
-  const { pieces, tache, enveloppe } = corps;
+  const { pieces, tache, enveloppe, contexte } = corps;
   let consigne = PROMPTS[tache];
 
   // Une enveloppe a la fois : requetes plus courtes, donc plus rapides.
@@ -58,6 +58,15 @@ module.exports = async function (req, res) {
 
   if (contenu.length === 0) {
     return res.status(400).json({ erreur: "Les pieces transmises sont vides" });
+  }
+
+  if (contexte && String(contexte).trim()) {
+    contenu.push({
+      type: "text",
+      text: "=== ARTICLES DEJA PRESENTS AU BORDEREAU ===\n" +
+            String(contexte).slice(0, 12000) +
+            "\n=== FIN DE LA LISTE ==="
+    });
   }
 
   contenu.push({ type: "text", text: consigne });
@@ -178,13 +187,18 @@ Extrais les parametres de la consultation. Schema exact :
 {"objet":str|null,"maitre_ouvrage":str|null,"reference":str|null,
 "type_marche":"TRAVAUX"|"FOURNITURES"|"SERVICES"|"ETUDES"|null,
 "estimation_mo":nombre|null,"delai_execution":nombre|null,"unite_delai":"MOIS"|"JOUR"|null,
-"delais_partiels":str|null,
-"date_limite":"AAAA-MM-JJ"|null,"heure_limite":str|null,"delai_validite_offres":nombre|null,
-"cautionnement_provisoire":nombre|null,"penalite_retard":str|null,"revision_prix":str|null,
+"delais_partiels":[{"objet":str,"duree":nombre,"unite":"MOIS"|"JOUR"}],
+"date_publication":"AAAA-MM-JJ"|null,"date_limite":"AAAA-MM-JJ"|null,"heure_limite":str|null,
+"date_limite_eclaircissements":"AAAA-MM-JJ"|null,"date_visite_lieux":"AAAA-MM-JJ"|null,
+"delai_validite_offres":nombre|null,
+"cautionnement_provisoire":nombre|null,"retenue_garantie":nombre|null,
+"penalite_retard":str|null,"revision_prix":str|null,
 "qualification_exigee":str|null,"classe_exigee":str|null,
 "mode_evaluation":str|null,"note_technique_min":nombre|null,"note_technique_totale":nombre|null,
 "sources":[{"champ":str,"ref":str,"extrait":str}]}
 
+"delais_partiels" liste les delais intermediaires imposes, vide s'il n'y en a pas.
+"retenue_garantie" est le taux en pourcentage, sans le signe.
 "note_technique_totale" est le bareme sur lequel l'offre technique est notee (souvent 100).
 Le champ "ref" indique la piece et l'article, par exemple "RC art. 3".
 Limite "sources" a 8 entrees, extraits de 10 a 25 mots recopies litteralement.`,
@@ -203,6 +217,31 @@ Maximum 15 entrees. Une piece par entree : si une phrase en enumere cinq, produi
 Schema exact :
 {"e":[{"env":"ADMINISTRATIF"|"TECHNIQUE"|"ADDITIF"|"OFFRE_TECHNIQUE"|"OFFRE_FINANCIERE",
 "t":str,"ref":str,"x":str,"el":0|1,"n":0|1,"pt":nombre|null,"c":nombre}]}`,
+
+  prestations: SOCLE + `
+
+La liste des articles du bordereau des prix te sera fournie avant cette consigne.
+
+Repere les prestations, fournitures, sujetions ou obligations IMPOSEES par le CPS ou le reglement
+de consultation qui ne correspondent a AUCUN article du bordereau. Autrement dit : ce que
+l'entreprise devra executer sans qu'un prix ne le remunere explicitement.
+
+Ne retiens que ce qui a un impact de cout reel. Ignore les obligations purement administratives
+sans consequence financiere. Maximum 8 entrees, de la plus couteuse a la moins couteuse.
+
+"impact" vaut CHIFFRAGE lorsque la prestation est manifestement a la charge de l'entrepreneur au
+titre des sujetions et peut etre integree aux prix existants : installation de chantier, essais de
+laboratoire, plans de recolement, gardiennage, signalisation, repli.
+"impact" vaut ECLAIRCISSEMENT lorsqu'il s'agit d'un ouvrage quantifiable qui devrait normalement
+disposer de son propre prix : le silence du bordereau ressemble alors a un oubli du maitre d'ouvrage.
+
+"x" est un fragment recopie LITTERALEMENT de la piece (8 a 25 mots).
+
+Schema exact :
+{"p":[{"t":str,"ref":str,"x":str,"impact":"CHIFFRAGE"|"ECLAIRCISSEMENT","d":str}]}
+
+"d" explique en une phrase la consequence pratique pour le chiffrage.
+Si rien n'est decelable, renvoie {"p":[]}.`,
 
   anomalies: SOCLE + `
 
