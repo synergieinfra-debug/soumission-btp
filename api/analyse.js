@@ -157,6 +157,21 @@ const SOCLE =
   "liste vide. Reponds uniquement par un objet JSON valide, sans texte avant ni apres, sans balises de code.";
 
 const PROMPTS = {
+  coherence: SOCLE + `
+
+Verifie que toutes les pieces fournies concernent bien LE MEME marche.
+Compare pour chaque piece son objet, son maitre d'ouvrage et sa reference d'appel d'offres.
+
+"compatible" vaut 0 uniquement si deux pieces designent manifestement des marches differents :
+objets sans rapport, maitres d'ouvrage differents, references d'appel d'offres differentes.
+Une simple difference de formulation ou un objet abrege ne suffisent pas : dans le doute, mets 1.
+
+"motif" decrit en une phrase ce qui oppose les pieces, en les nommant. Laisse null si compatible.
+
+Schema exact :
+{"compatible":0|1,"motif":str|null,
+"pieces":[{"nature":str,"objet":str|null,"maitre_ouvrage":str|null,"reference":str|null}]}`,
+
   parametres: SOCLE + `
 
 Extrais les parametres de la consultation. Schema exact :
