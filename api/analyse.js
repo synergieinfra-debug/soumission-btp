@@ -253,6 +253,21 @@ Schema exact :
 "d" explique en une phrase la consequence pratique pour le chiffrage.
 Si rien n'est decelable, renvoie {"p":[]}.`,
 
+  moyens_exiges: SOCLE + `
+
+Releve les moyens humains et materiels EXIGES par le reglement de consultation ou le cahier des
+prescriptions speciales pour l'execution de ce marche : profils, qualifications, experience
+minimale, engins, equipements, materiel de mesure ou de laboratoire.
+
+Ne retiens que ce que le dossier exige explicitement. N'ajoute rien d'usuel qui ne serait pas ecrit.
+Maximum 15 profils et 15 materiels.
+
+Schema exact :
+{"h":[{"profil":str,"qualification":str,"experience":str,"nombre":nombre|null,"ref":str}],
+"m":[{"designation":str,"caracteristique":str,"nombre":nombre|null,"ref":str}]}
+
+"ref" indique la piece et l'article. Si le dossier n'exige rien de precis, renvoie des listes vides.`,
+
   plan_memoire: SOCLE + `
 
 Un modele de memoire technique utilise par l'entreprise sur un marche precedent t'est fourni avant
