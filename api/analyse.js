@@ -20,6 +20,10 @@ module.exports = async function (req, res) {
 
   // Une enveloppe a la fois : requetes plus courtes, donc plus rapides.
   // Le memoire est redige en deux passes : chacune tient dans le delai.
+  if (tache === "section_memoire" && enveloppe) {
+    consigne = consigne + "\n\nSECTION A REDIGER : " + enveloppe;
+  }
+
   if (tache === "methodologie" && enveloppe) {
     consigne = consigne + "\n\nNe redige QUE les sections " + enveloppe +
       ". N'ecris rien pour les autres sections.";
@@ -248,6 +252,41 @@ Schema exact :
 
 "d" explique en une phrase la consequence pratique pour le chiffrage.
 Si rien n'est decelable, renvoie {"p":[]}.`,
+
+  plan_memoire: SOCLE + `
+
+Un modele de memoire technique utilise par l'entreprise sur un marche precedent t'est fourni avant
+cette consigne, ainsi que les pieces du marche en cours.
+
+Releve le PLAN du modele : la liste ordonnee de ses sections principales. Conserve les intitules du
+modele lorsqu'ils conviennent, adapte-les au marche en cours lorsqu'ils font reference a l'ancien
+projet, et ajoute les sections qu'exige le reglement du marche en cours si elles manquent.
+
+Entre 8 et 14 sections. Pas de sous-sections.
+
+Schema exact :
+{"plan":[{"t":str,"a":str}]}
+
+"t" est l'intitule de la section. "a" resume en une phrase ce que cette section devra traiter pour
+le marche en cours.`,
+
+  section_memoire: SOCLE + `
+
+Redige UNE SEULE section du memoire technique, celle qui t'est designee apres cette consigne.
+
+Le modele de l'entreprise et les pieces du marche en cours te sont fournis. Reprends du modele le
+style, le niveau de detail et les formulations professionnelles ; remplace tout ce qui appartient
+au marche precedent par les donnees du marche en cours.
+
+INTERDITS : generalites interchangeables, promesses invérifiables, remplissage. Chaque paragraphe
+doit s'appuyer sur un element concret : nature et quantites des ouvrages, contraintes du site,
+delais, controles exiges, moyens affectes, penalites.
+
+Redige 5 a 9 paragraphes de 60 a 120 mots, en francais professionnel, a la premiere personne du
+pluriel. N'ecris ni le titre de la section ni de conclusion generale.
+
+Schema exact :
+{"p":[str]}`,
 
   methodologie: SOCLE + `
 
